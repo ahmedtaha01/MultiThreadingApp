@@ -105,7 +105,7 @@ int main(int argc,char ** argv){
             }
             pthread_join(tid,NULL);
             for(int i =0; i < NUM_THREADS;i++){
-                pthread_join(workers[i],NULL);
+                pthread_cancel(workers[i]);
             }
             
             T = clock() - T;
@@ -244,7 +244,7 @@ void *parentCheckOnChildren(){
         if(ZERO_SIGNAL == 1){
             printf("Zero found \n");
             pthread_exit(0);
-        } else if(ALL_COMPLETE == 4){
+        } else if(ALL_COMPLETE == NUM_THREADS){
             printf("All Complete \n");
             pthread_exit(0);
         }
@@ -273,15 +273,13 @@ void *parallelSearchPCOC(void *param){
 
 void *parallelSearchSYM(void *param){
     int *ptr = (int *) param;
-    printf("%i",ptr[1]);
+    
     for(int i =ptr[1]; i < ptr[2];i++){
         if(SEMAPHORE_STATE == 1){
-            sem_post(&SEM);
+            pthread_exit(0);
         }
         if(ARR[i] == 0){
-            if(i == 3){
-                printf("here \n");
-            }
+
             MIN = 0;
             SEMAPHORE_STATE = 1;
             sem_post(&SEM);
@@ -294,8 +292,9 @@ void *parallelSearchSYM(void *param){
         
     }
     ALL_COMPLETE += 1;
-    if(ALL_COMPLETE == 4){
+    if(ALL_COMPLETE == NUM_THREADS){
         SEMAPHORE_STATE = 1;
         sem_post(&SEM);
     }
+    pthread_exit(0);
 }
